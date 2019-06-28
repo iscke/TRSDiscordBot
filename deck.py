@@ -42,7 +42,7 @@ class Deck:
         for suit in ["spades","diamonds","clubs","hearts"]:
             for rank in ["ace","two","three","four","five","six","seven","eight","nine","ten","jack","queen","king"]:
                 self.deck.append(Card(rank, suit))
-                
+
     def shuffle(self):
         random.shuffle(self.deck)
         return True
@@ -57,7 +57,6 @@ class Deck:
 
     def jsonize(self):
         return [i.jsonize() for i in self.deck]
-
 
 class DeckHandler:
     def __init__(self):
@@ -75,7 +74,7 @@ class DeckHandler:
             #iterate through each deck and create an object for each
             json_deck = json_decklist[deck_name]
             new_deck = []
-            
+
             for card in json_deck:
                 #iterate through cards
                 card_info = card.split(',') #formatted rank,suit OR joker

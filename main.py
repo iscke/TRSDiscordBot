@@ -5,7 +5,7 @@ import garnets, deck, utils
 class DiscordBot(discord.Client):
     def __init__(self, prefix, description):
         super().__init__()
-        
+
         #prefix is the character placed before commands by users
         self.prefix = prefix
         self.description = description
@@ -17,7 +17,6 @@ class DiscordBot(discord.Client):
         #load external handlers
         self.deckhandler = deck.DeckHandler()
         self.garnethandler = garnets.GarnetHandler()
-
 
     async def on_ready(self):
         print("Ready!")
@@ -47,7 +46,6 @@ class DiscordBot(discord.Client):
                 elif key in ['deck','decks','cards','card']:
                     return_message = await self.command_deck(args)
                     await self.reply(channel, return_message)
-
 
     #Bot Functions (Not Commands)
     #Sets a timer and returns a message to the destination provided when it is finished.
@@ -83,7 +81,6 @@ class DiscordBot(discord.Client):
         else:
             return "The number of faces and dice must be over zero."
 
-
     #Bot Commands
     async def command_timer(self, args, channel):
         if not len(args) or not args[0].isdigit:
@@ -109,9 +106,7 @@ class DiscordBot(discord.Client):
 
     async def command_deck(self, args):
         return_message = await self.deckhandler.handle(args)
-        return return_message     
-
-            
+        return return_message      
 
 #set up bot
 if __name__ == "__main__":
@@ -119,8 +114,3 @@ if __name__ == "__main__":
         config = json.load(f)
     bot = DiscordBot(config['prefix'], config['description'])                   
     bot.run(config['bot_token'])
-
-    
-
-
-
