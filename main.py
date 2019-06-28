@@ -36,15 +36,15 @@ class DiscordBot(discord.Client):
                     return_message = await self.command_timer(args, channel)
                     await self.reply(channel, return_message)
 
-                if key in ['dice','roll']:
+                elif key in ['dice','roll']:
                     return_message = await self.command_dice(args)
                     await self.reply(channel, return_message)
 
-                if key in ['garnet','garnets','currency','points','point']:
+                elif key in ['garnet','garnets','currency','points','point']:
                     return_message = await self.command_garnets(args)
                     await self.reply(channel, return_message)
 
-                if key in ['deck','decks','cards','card']:
+                elif key in ['deck','decks','cards','card']:
                     return_message = await self.command_deck(args)
                     await self.reply(channel, return_message)
 
@@ -53,7 +53,7 @@ class DiscordBot(discord.Client):
     #Sets a timer and returns a message to the destination provided when it is finished.
     async def set_timer(self, time, destination):
         await asyncio.sleep(time)
-        await self.send_message(destination, "The timer has expired!")
+        await destination.send("The timer has expired!")
 
     #function that makes return messages cleaner by sending multiple messages if message is a list
     async def reply(self, destination, message):
@@ -86,29 +86,22 @@ class DiscordBot(discord.Client):
 
     #Bot Commands
     async def command_timer(self, args, channel):
-        return_message = "Please provide an argument for how long the timer should run for in seconds, e.g. ``timer 60``."
-        if len(args) >= 1:
-            if args[0].isdigit():
-                time = int(args[0])
-                self.loop.create_task(self.set_timer(time, channel))
-                return_message = f"Set a timer for {time} seconds."
-        return return_message
+        if not len(args) or not args[0].isdigit:
+            return "Please provide an argument for how long the timer should run for in seconds, e.g. ``timer 60``."
+        time = int(args[0])
+        self.loop.create_task(self.set_timer(time, channel))
+        return f"Set a timer for {time} seconds."
 
     async def command_dice(self, args):
-        return_message = "Please provide arguments for how many faces and how many dice to roll (default 6, 1), e.g. ``roll 6, 2``"
+        if not len(args) or not all(arg.isdigit() for arg in args):
+            return "Please provide arguments for how many faces and how many dice to roll (default 6, 1), e.g. ``roll 6, 2``"
         dice = 1
         faces = 6
         if len(args) >= 2:
-            if args[0].isdigit() and args[1].isdigit():
                 faces, dice = int(args[0]), int(args[1])
-                return_message = self.roll_dice(dice, faces)
         elif len(args) >= 1:
-            if args[0].isdigit():
                 faces = int(args[0])
-                return_message = self.roll_dice(dice, faces)
-        else:
-            return_message = self.roll_dice(dice, faces)
-        return return_message
+        return self.roll_dice(dice, faces)
 
     async def command_garnets(self, args):   
         return_message = await self.garnethandler.handle(args)

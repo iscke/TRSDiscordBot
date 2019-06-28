@@ -8,10 +8,10 @@ class GarnetHandler:
         if len(args) > 0:
             #This command has subcommands, which are listed here
             if args[0] == 'set':
-                return_message = await self.command_set(args[1:])
+                return await self.command_set(args[1:])
 
-            if args[0] == 'add':
-                return_message = await self.command_add(args[1:])
+            elif args[0] == 'add':
+                return await self.command_add(args[1:])
 
         return return_message
 
