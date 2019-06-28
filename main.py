@@ -1,5 +1,5 @@
 import discord, asyncio, json, random
-import utils
+import garnets, deck, utils
 
 #Primary Bot class that handles messages received from Discord and processes them
 class DiscordBot(discord.Client):
@@ -13,7 +13,12 @@ class DiscordBot(discord.Client):
         #register events
         self.event(self.on_ready)
         self.event(self.on_message)
-        
+
+        #load external handlers
+        self.deckhandler = deck.DeckHandler()
+        self.garnethandler = garnets.GarnetHandler()
+
+
     async def on_ready(self):
         print("Ready!")
 
@@ -29,11 +34,19 @@ class DiscordBot(discord.Client):
 
                 if key == 'timer':
                     return_message = await self.command_timer(args, channel)
-                    await self.send_message(channel, return_message)
+                    await self.reply(channel, return_message)
 
                 if key in ['dice','roll']:
                     return_message = await self.command_dice(args, channel)
-                    await self.send_message(channel, return_message)
+                    await self.reply(channel, return_message)
+
+                if key in ['garnet','garnets','currency','points','point']:
+                    return_message = await self.command_garnets(args, channel)
+                    await self.reply(channel, return_message)
+
+                if key in ['deck','decks','cards','card']:
+                    return_message = await self.command_deck(args, channel)
+                    await self.reply(channel, return_message)
 
 
     #Bot Functions (Not Commands)
@@ -42,13 +55,34 @@ class DiscordBot(discord.Client):
         await asyncio.sleep(time)
         await self.send_message(destination, "The timer has expired!")
 
+    #function that makes return messages cleaner by sending multiple messages if message is a list
+    async def reply(self, destination, message):
+        if type(message) == list:
+            for i in message:
+                await self.send_message(destination, i)
+        elif type(message) == str:
+            await self.send_message(destination, message)
+        
+    def find_user(self, name, server=None):
+        #This works if <name> is a User ID, otherwise None
+        user = self.get_user(name)
+        #if it didnt work by ID and a server was provided in kwargs:
+        if (not user) and server:
+            user = server.get_member_named(name)
+        #either a User OR MEMBER object or None
+        return user
+
     def roll_dice(self, dice, faces):
         if dice > 0 and faces > 0:
             result = [random.randint(1, faces) for i in range(dice)]
             string_result = [str(i) for i in result]
-            return f"{', '.join(string_result)} | Sum: {sum(result)}"
+            if len(result) > 1:
+                return f"{', '.join(string_result)} | Sum: {sum(result)}"
+            else:
+                return f"{string_result[0]}"
         else:
             return "The number of faces and dice must be over zero."
+
 
     #Bot Commands
     async def command_timer(self, args, channel):
@@ -66,7 +100,7 @@ class DiscordBot(discord.Client):
         faces = 6
         if len(args) >= 2:
             if args[0].isdigit() and args[1].isdigit():
-                dice, faces = int(args[0]), int(args[1])
+                faces, dice = int(args[0]), int(args[1])
                 return_message = self.roll_dice(dice, faces)
         elif len(args) >= 1:
             if args[0].isdigit():
@@ -75,6 +109,14 @@ class DiscordBot(discord.Client):
         else:
             return_message = self.roll_dice(dice, faces)
         return return_message
+
+    async def command_garnets(self, args, channel):   
+        return_message = await self.garnethandler.handle(args, channel)
+        return return_message
+
+    async def command_deck(self, args, channel):
+        return_message = await self.deckhandler.handle(args, channel)
+        return return_message     
 
             
 
