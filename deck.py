@@ -57,14 +57,19 @@ class Deck:
 
     def jsonize(self):
         return [i.jsonize() for i in self.deck]
-        
+
 
 class DeckHandler:
     def __init__(self):
         self.decks = {}
 
-        with open("deck.json") as f:
-            json_decklist = json.load(f)
+        json_decklist = {}
+        try:
+            with open("deck.json") as f:
+                json_decklist = json.load(f)
+        except FileNotFoundError:
+            pass
+
         #Load the decks from string formatted json into our local objects Card, Deck
         for deck_name in json_decklist.keys():
             #iterate through each deck and create an object for each
@@ -80,29 +85,29 @@ class DeckHandler:
                     new_deck.append(Card("joker"))
             self.decks[deck_name] = Deck(deck=new_deck, name=deck_name)
 
-    async def handle(self, args, channel):
+    async def handle(self, args):
         return_message = "Please specify what you would like to do: create, shuffle, save"
         if len(args) > 0:
             #This command has subcommands, which are listed here
             #Validation and the command is generally handled in the side there. validation could be separated.
             if args[0] == 'create':
-                return_message = self.command_create(args[1:], channel)
+                return_message = self.command_create(args[1:])
 
             if args[0] == 'shuffle':
-                return_message = self.command_shuffle(args[1:], channel)
+                return_message = self.command_shuffle(args[1:])
 
             if args[0] == 'list':
-                return_message = self.command_list(args[1:], channel)
+                return_message = self.command_list(args[1:])
 
             if args[0] == 'save':
-                return_message = self.command_save(args[1:], channel)
+                return_message = self.command_save(args[1:])
 
             if args[0] == 'draw':
-                return_message = self.command_draw(args[1:], channel)
+                return_message = self.command_draw(args[1:])
 
         return return_message
 
-    def command_create(self, args, channel):
+    def command_create(self, args):
         if len(args) > 0:
             name = args[0]
             if name in self.decks:
@@ -116,7 +121,7 @@ class DeckHandler:
             return_message = "Please provide a name to refer to this deck."
         return return_message
 
-    def command_shuffle(self, args, channel):
+    def command_shuffle(self, args):
         if len(args) > 0:
             name = args[0]
             if name in self.decks:
@@ -128,7 +133,7 @@ class DeckHandler:
             return_message = "Please give the name of the deck."
         return return_message
 
-    def command_list(self, args, channel):
+    def command_list(self, args):
         decks = [i for i in self.decks.keys()]
         total = len(decks)
         if total > 1:
@@ -139,7 +144,7 @@ class DeckHandler:
             return_message = f"You have 1 deck: {decks[0]}"
         return return_message
 
-    def command_save(self, args, channel):
+    def command_save(self, args):
         jsonized_decks = {}
         for deck_name in self.decks.keys():
             jsonized_decks[deck_name] = self.decks[deck_name].jsonize()
@@ -147,7 +152,7 @@ class DeckHandler:
             json.dump(jsonized_decks, f)
         return "The current deck list was saved. It will be loaded automatically upon starting the bot." 
 
-    def command_draw(self, args, channel):
+    def command_draw(self, args):
         return_message = "Please enter the deck name and number of cards to draw."
         if len(args) > 0:
             name = args[0]

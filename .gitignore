@@ -1,4 +1,6 @@
 config.json
+deck.json
+garnets.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

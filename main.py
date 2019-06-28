@@ -37,15 +37,15 @@ class DiscordBot(discord.Client):
                     await self.reply(channel, return_message)
 
                 if key in ['dice','roll']:
-                    return_message = await self.command_dice(args, channel)
+                    return_message = await self.command_dice(args)
                     await self.reply(channel, return_message)
 
                 if key in ['garnet','garnets','currency','points','point']:
-                    return_message = await self.command_garnets(args, channel)
+                    return_message = await self.command_garnets(args)
                     await self.reply(channel, return_message)
 
                 if key in ['deck','decks','cards','card']:
-                    return_message = await self.command_deck(args, channel)
+                    return_message = await self.command_deck(args)
                     await self.reply(channel, return_message)
 
 
@@ -59,10 +59,10 @@ class DiscordBot(discord.Client):
     async def reply(self, destination, message):
         if type(message) == list:
             for i in message:
-                await self.send_message(destination, i)
+                await destination.send(i)
         elif type(message) == str:
-            await self.send_message(destination, message)
-        
+                await destination.send(message)
+
     def find_user(self, name, server=None):
         #This works if <name> is a User ID, otherwise None
         user = self.get_user(name)
@@ -94,7 +94,7 @@ class DiscordBot(discord.Client):
                 return_message = f"Set a timer for {time} seconds."
         return return_message
 
-    async def command_dice(self, args, channel):
+    async def command_dice(self, args):
         return_message = "Please provide arguments for how many faces and how many dice to roll (default 6, 1), e.g. ``roll 6, 2``"
         dice = 1
         faces = 6
@@ -110,12 +110,12 @@ class DiscordBot(discord.Client):
             return_message = self.roll_dice(dice, faces)
         return return_message
 
-    async def command_garnets(self, args, channel):   
-        return_message = await self.garnethandler.handle(args, channel)
+    async def command_garnets(self, args):   
+        return_message = await self.garnethandler.handle(args)
         return return_message
 
-    async def command_deck(self, args, channel):
-        return_message = await self.deckhandler.handle(args, channel)
+    async def command_deck(self, args):
+        return_message = await self.deckhandler.handle(args)
         return return_message     
 
             
