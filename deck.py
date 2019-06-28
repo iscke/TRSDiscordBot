@@ -48,6 +48,8 @@ class Deck:
         return True
 
     def draw(self, amount):
+        if amount > len(self.deck):
+            amount = len(self.deck)
         cards = []
         for index in range(amount):
             cards.append(self.deck[index])
@@ -110,26 +112,24 @@ class DeckHandler:
     def command_create(self, args):
         if not len(args):
             return "Please specify a name."
+
+        name = args[0]
+        if name in self.decks:
+            return "This deck already exists. Please delete it first or use a different name."
         else:
-            name = args[0]
-            if name in self.decks:
-                return "This deck already exists. Please delete it first or use a different name."
-            else:
-                deck = Deck(name=name)
-                deck.generate()
-                self.decks[name] = deck
-                return f'A new deck "{name}" was created.'
+            deck = Deck(name=name)
+            deck.generate()
+            self.decks[name] = deck
+            return f'A new deck "{name}" was created.'
 
     def command_shuffle(self, args):
         if not len(args):
             return "Please specify a name"
-        else:
-            name = args[0]
-            if name in self.decks:
-                self.decks[name].shuffle()
-                return "The deck has been shuffled. Beware, the chances of it still being in the same order are 1/10^68!"
-            else:
-                return "The deck could not be found."
+        deck = self.decks[args[0]]
+        if not deck:
+            return "The deck could not be found"
+        deck.shuffle()
+        return "The deck has been shuffled. Beware, the chances of it still being in the same order are 1/10^68!"
 
     def command_list(self, args):
         decks = [i for i in self.decks.keys()]
@@ -142,7 +142,7 @@ class DeckHandler:
             return f"You have 1 deck: {decks[0]}"
 
     def command_save(self, args):
-        jsonized_decks = {deck.jsonize for deck in self.decks}
+        jsonized_decks = {key:deck.jsonize() for key, deck in self.decks.items()}
         with open("deck.json",'w') as f:
             json.dump(jsonized_decks, f)
         return "The current deck list was saved. It will be loaded automatically upon starting the bot." 
@@ -150,24 +150,17 @@ class DeckHandler:
     def command_draw(self, args):
         if not len(args):
             return "Please enter the deck name and number of cards to draw."
+        deck = self.decks[args[0]]
+        if not deck:
+            return "The deck could not be found"
         else:
-            name = args[0]
-            if name in self.decks:
-                if len(args) > 1:
-                    if args[1].isdigit():
-                        draw_amount = 1
-                        try:
-                            draw_amount = int(args[1])
-                        except ValueError:
-                            return "Invalid number"
-                        #validation done:
-                        cards = self.decks[name].draw(draw_amount)
-                        string_cards = '\n'.join([card.name for card in cards])
-                        return f"Cards drawn:\n{string_cards}"
-                else:
-                    #validation done:
-                    card = self.decks[name].draw(1)[0]
-                    return f"Card drawn:\n{card.name}"
+            draw_amount = 1
+            if len(args) > 1 and args[1].isdigit():
+                draw_amount = int(args[1])
 
+            cards = deck.draw(draw_amount)
+            string_cards = '\n'.join([card.name for card in cards])
+            if draw_amount > 1:
+                return f"Cards drawn:\n{string_cards}"
             else:
-                return "The deck could not be found."
+                return f"Card drawn:\n{string_cards}"
